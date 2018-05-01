@@ -1,6 +1,6 @@
 // index.js
 
-var REST_DATA = 'api/favorites';
+var REST_DATA = 'api/glucosedata';
 var KEY_ENTER = 13;
 var defaultItems = [
 
@@ -14,7 +14,7 @@ function loadItems() {
     xhrGet(REST_DATA, function(data) {
 
         //stop showing loading message
-        stopLoadingMessage();
+        // stopLoadingMessage();
 
         var receivedItems = data || [];
         var items = [];
@@ -34,7 +34,7 @@ function loadItems() {
             addItem(items[i], !hasItems);
         }
         if (!hasItems) {
-            var table = document.getElementById('notes');
+            var table = document.getElementById('details');
             var nodes = [];
             for (i = 0; i < table.rows.length; ++i) {
                 nodes.push(table.rows[i].firstChild.firstChild);
@@ -105,7 +105,7 @@ function uploadFile(node) {
 
 }
 
-var attachButton = "<br><div class='uploadBox'><input type=\"file\" name=\"file\" id=\"upload_file\"><input width=\"100\" type=\"submit\" value=\"Upload\" onClick='uploadFile(this)'></div>";
+var attachButton = "";
 
 function setRowContent(item, row) {
     var innerHTML = "<td class='contentName'><textarea id='nameText' class = 'nameText' onkeydown='onKey(event)'>" + item.name + "</textarea></td><td class='contentDetails'>";
@@ -142,7 +142,7 @@ function setRowContent(item, row) {
 
     }
 
-    row.innerHTML = innerHTML + attachButton + "</td><td class = 'contentAction'><span class='deleteBtn' onclick='deleteItem(this)' title='delete me'></span></td>";
+    row.innerHTML = innerHTML + attachButton + "</td>";
 
 }
 
@@ -166,14 +166,14 @@ function addItem(item, isNew) {
             "<td class = 'contentAction'><span class='deleteBtn' onclick='deleteItem(this)' title='delete me'></span></td>";
     }
 
-    var table = document.getElementById('notes');
+    var table = document.getElementById('details');
     table.lastChild.appendChild(row);
     row.isNew = !item || isNew;
 
-    if (row.isNew) {
-        var textarea = row.firstChild.firstChild;
-        textarea.focus();
-    }
+    // if (row.isNew) {
+    //     var textarea = row.firstChild.firstChild;
+    //     textarea.focus();
+    // }
 
 }
 
@@ -286,6 +286,6 @@ function stopLoadingMessage() {
     document.getElementById('loadingImage').innerHTML = "";
 }
 
-showLoadingMessage();
+// showLoadingMessage();
 //updateServiceInfo();
 loadItems();
