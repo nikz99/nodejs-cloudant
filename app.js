@@ -80,7 +80,7 @@ function initDBConnection() {
     cloudant = require('cloudant')(dbCredentials.url);
 
     // check if DB exists if not create
-    cloudant.db.create(dbCredentials.dbName, function(err, res) {
+    cloudant.db.create(dbCredentials.dbName, function (err, res) {
         if (err) {
             console.log('Could not create new db: ' + dbCredentials.dbName + ', it might already exist.');
         }
@@ -103,7 +103,7 @@ function createResponseData(id, name, value, attachments) {
     };
 
 
-    attachments.forEach(function(item, index) {
+    attachments.forEach(function (item, index) {
         var attachmentData = {
             content_type: item.type,
             key: item.key,
@@ -119,7 +119,7 @@ function sanitizeInput(str) {
     return String(str).replace(/&(?!amp;|lt;|gt;)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-var saveDocument = function(id, name, value, response) {
+var saveDocument = function (id, name, value, response) {
 
     if (id === undefined) {
         // Generated random id
@@ -129,7 +129,7 @@ var saveDocument = function(id, name, value, response) {
     db.insert({
         name: name,
         value: value
-    }, id, function(err, doc) {
+    }, id, function (err, doc) {
         if (err) {
             console.log(err);
             response.sendStatus(500);
@@ -140,69 +140,91 @@ var saveDocument = function(id, name, value, response) {
 
 }
 
-setInterval(()=>{
-    request('https://my.api.mockaroo.com/sugar_levels.json?key=a9ca3c60', function (error, response, body) {
-    if(error){
-     console.error('error:', error); // Print the error if one occurred  
-    }else{
-      console.log(body)
-   
-      db.insert({
-        name: 'GCMDetails_1',
-        value: body
-    }, '', function(err, doc) {
-        // if (err) {
-        //     console.log(err);
-        //     // response.sendStatus(500);
-        // } else
-        //     // response.sendStatus(200);
-        // response.end();
-    });
-    }
-  });
-  },900000);
+// setInterval(()=>{
+//     request('https://my.api.mockaroo.com/sugar_levels.json?key=a9ca3c60', function (error, response, body) {
+//     if(error){
+//      console.error('error:', error); // Print the error if one occurred  
+//     }else{
+//       console.log(body)
 
-  
+//       db.insert({
+//         name: 'GCMDetails_1',
+//         value: body
+//     }, '', function(err, doc) {
+//         /f/ if (err) {
+//         //     console.log(err);
+//         //     // response.sendStatus(500);
+//         // } else
+//         //     // response.sendStatus(200);
+//         // response.end();
+//     });
+//     }
+//   });
+//   },900000);
 
-  app.get('/api/glucosedata', function(request, response) {
+
+
+app.get('/api/glucosedata', function (request, response) {
 
     console.log("Get method invoked.. ")
 
     db = cloudant.use(dbCredentials.dbName);
     var docList = [];
     var i = 0;
-    db.list(function(err, body) {
+    db.list(function (err, body) {
         if (!err) {
             var len = body.rows.length;
-            console.log('total # of docs -> ' + len);
-            if (len != 0)  {
-
-                body.rows.forEach(function(document) {
-
-                    db.get(document.id, {
-                        revs_info: true
-                    }, function(err, doc) {
-                        if (!err) {
-                                var responseData = createResponseData(
-                                    doc._id,
-                                    doc.name,
-                                    doc.value, []);
-                            docList.push(responseData);
-                            i++;
-                            if (i >= len) {
-                                response.setHeader('Content-Type', 'text/plain');
-                                response.write(JSON.stringify(docList));
-                                console.log('ending response...');
-                                response.end();
-                            }
-                        } else {
-                            console.log(err);
+            // console.log('total # of docs -> ' + body.rows);
+            // if (len != 0)  {
+            var limit = (len < 20) ? len : 20;
+            for (let j = 0; j < limit; j++) {
+                console.log('J', j);
+                db.get(body.rows[j].id, {
+                    revs_info: true
+                }, function (err, doc) {
+                    if (!err) {
+                        var responseData = createResponseData(
+                            doc._id,
+                            doc.name,
+                            doc.value, []);
+                        docList.push(responseData);
+                        if (j >= len || j == 19) {
+                            response.setHeader('Content-Type', 'text/plain');
+                            response.write(JSON.stringify(docList));
+                            console.log('ending response...');
+                            response.end();
                         }
-                    });
-
+                    } else {
+                        console.log(err);
+                    }
                 });
             }
 
+            // body.rows.forEach(function (document) {
+            //     console.log(document);
+
+            //     db.get(document.id, {
+            //         revs_info: true
+            //     }, function (err, doc) {
+            //         if (!err) {
+            //             var responseData = createResponseData(
+            //                 doc._id,
+            //                 doc.name,
+            //                 doc.value, []);
+            //             docList.push(responseData);
+            //             i++;
+            //             if (i >= len) {
+            //                 response.setHeader('Content-Type', 'text/plain');
+            //                 response.write(JSON.stringify(docList));
+            //                 console.log('ending response...');
+            //                 response.end();
+            //             }
+            //         } else {
+            //             console.log(err);
+            //         }
+            //     });
+
+            // });
         } else {
             console.log(err);
         }
@@ -210,6 +232,6 @@ setInterval(()=>{
 
 });
 
-http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
+http.createServer(app).listen(app.get('port'), '0.0.0.0', function () {
     console.log('Express server listening on port ' + app.get('port'));
 });
