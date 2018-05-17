@@ -22,6 +22,8 @@ var dbCredentials = {
     dbName: 'my_sample_db'
 };
 
+var levelConfig = JSON.parse(fs.readFileSync('limits.json', 'utf8'));
+console.log(levelConfig);
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var logger = require('morgan');
@@ -98,7 +100,7 @@ function createResponseData(id, name, value, attachments) {
     var responseData = {
         id: id,
         name: sanitizeInput(name),
-        value: sanitizeInput(value),
+        value: value,
         attachements: []
     };
 
@@ -140,27 +142,48 @@ var saveDocument = function (id, name, value, response) {
 
 }
 
-// setInterval(()=>{
-//     request('https://my.api.mockaroo.com/sugar_levels.json?key=a9ca3c60', function (error, response, body) {
-//     if(error){
-//      console.error('error:', error); // Print the error if one occurred  
-//     }else{
-//       console.log(body)
+// setInterval(() => {
+//     const body = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+//     const data = [];
+//     body.forEach(patient => {
+//         let patientStatus = checkSugarLevel(patient);
+//         setTimeout(() => {
+//             db.insert({
+//                 name: (new Date()).getTime(),
+//                 value: patientStatus
+//             }, '', function (err, doc) {
+//                 if (err)
+//                     console.log(err);
+//                 else
+//                     console.log('Successfully added record');
+//             });
+//         }, 1000);
+//     })
 
-//       db.insert({
-//         name: 'GCMDetails_1',
-//         value: body
-//     }, '', function(err, doc) {
-//         /f/ if (err) {
-//         //     console.log(err);
-//         //     // response.sendStatus(500);
-//         // } else
-//         //     // response.sendStatus(200);
-//         // response.end();
-//     });
-//     }
-//   });
-//   },900000);
+
+//     // request('https://my.api.mockaroo.com/sugar_levels.json?key=a9ca3c60', function (error, response, body) {
+//     //     if (error) {
+//     //         console.error('error:', error); // Print the error if one occurred  
+//     //     } else {
+//     //         console.log({
+//     //             time:new Date(),
+//     //             value:body
+//     //         });
+
+//     //         // db.insert({
+//     //         //     name: new Date(),
+//     //         //     value: body
+//     //         // }, '', function (err, doc) {
+//     //         //     // if (err) {
+//     //         //     //     console.log(err);
+//     //         //     //     // response.sendStatus(500);
+//     //         //     // } else
+//     //         //     //     // response.sendStatus(200);
+//     //         //     // response.end();
+//     //         // });
+//     //     }
+//     // });
+// }, 60000);// 900000);
 
 
 
@@ -231,6 +254,42 @@ app.get('/api/glucosedata', function (request, response) {
     });
 
 });
+
+function checkSugarLevel(patientStatus) {
+    let sugarLevel;
+    for (let i = 0; i < levelConfig.length; i++) {
+        sugarLevel = levelConfig[i];
+        if (patientStatus.sugarLevel <= sugarLevel.value) {
+            break;
+        }
+    }
+    patientStatus.level = sugarLevel.level;
+    patientStatus.action = sugarLevel.action;
+
+    //Checking criticality
+    switch (sugarLevel.criticality) {
+        case 0:
+            patientStatus.criticality = 'NO RISK'
+            break;
+
+        case 1:
+            patientStatus.criticality = 'MEDIUM'
+            break;
+
+        case 2:
+            patientStatus.criticality = 'HIGH'
+            // perform Twillio messaging
+            break;
+
+        case 4:
+            patientStatus.criticality = 'VERY HIGH'
+            // perform Twillio messaging
+            break;
+
+    }
+    return patientStatus;
+
+}
 
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function () {
     console.log('Express server listening on port ' + app.get('port'));

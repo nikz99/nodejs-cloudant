@@ -1,0 +1,68 @@
+[
+    {
+        "value": 2.8,
+        "criticality": 2,
+        "level": "Dangerously Low",
+        "action": "Seek medical attention"
+    },
+    {
+        "value": 3.9,
+        "criticality": 1,
+        "level": "Low",
+        "action": "Consult your doctor"
+    },
+    {
+        "value": 4,
+        "criticality": 0,
+        "level": "Normal",
+        "action": "No action needed"
+    },
+    {
+        "value": 6,
+        "criticality": 0,
+        "level": "Normal",
+        "action": "No action needed"
+    },
+    {
+        "value": 7,
+        "criticality": 1,
+        "level": "Borderline",
+        "action": "Consult your doctor"
+    },
+    {
+        "value": 8.2,
+        "criticality": 1,
+        "level": "Borderline",
+        "action": "Consult your doctor"
+    },
+    {
+        "value": 10,
+        "criticality": 1,
+        "level": "Borderline",
+        "action": "Consult your doctor"
+    },
+    {
+        "value": 11,
+        "criticality": 2,
+        "level": "High",
+        "action": "Seek medical attention"
+    },
+    {
+        "value": 13.7,
+        "criticality": 2,
+        "level": "High",
+        "action": "Seek medical attention"
+    },
+    {
+        "value": 15.6,
+        "criticality": 2,
+        "level": "High",
+        "action": "Seek medical attention"
+    },
+    {
+        "value": 17.4,
+        "criticality": 3,
+        "level": "Very High",
+        "action": "Seek immediate medical attention"
+    }
+]

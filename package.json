@@ -3,7 +3,8 @@
   "version": "0.0.2",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "red": "node node_modules/node-red/red.js"
   },
   "dependencies": {
     "body-parser": "1.17.x",
@@ -14,6 +15,7 @@
     "express": "4.15.x",
     "method-override": "2.3.x",
     "morgan": "1.8.x",
+    "node-red": "^0.18.4",
     "request": "^2.85.0"
   },
   "repository": {},

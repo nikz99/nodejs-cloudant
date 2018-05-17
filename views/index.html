@@ -1,27 +1,122 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>Glucone Monitoring System</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no"/>
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<link rel="stylesheet" href="/style/style.css" />
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+	 crossorigin="anonymous"></script>
+	<script src="https://code.highcharts.com/highcharts.src.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js"></script>
+	<!-- Compiled and minified CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+	<!-- Compiled and minified JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+	<!-- <link rel="stylesheet" href="/style/style.css" /> -->
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+	 crossorigin="anonymous">
+	<link rel="stylesheet" href="/style/override.css" />
 </head>
-<body>
-	<div class = "container">
-	<div class = "banner">
-		<p class = "appTitle">
-			Glucose Monitoring System
-		</p>
-	</div>
 
-	<section>
-		<table id='details' class='records' border='0' cellspacing='0' cellpadding='0'><tbody></tbody></table>
-	</section>
-	<script type="text/javascript" src="/scripts/util.js"></script>
-	<script type="text/javascript" src="/scripts/index.js"></script>
-	<div id="myImage"><div id="innerImg"></div></div>
-	<br><br><br>
+<body>
+	<div class="">
+		<div class="banner">
+			<p class="">
+
+			</p>
+		</div>
+		<nav>
+			<div class="nav-wrapper blue lighten-2">
+				<a href="#" class="brand-logo">
+					<i class="large material-icons">bubble_chart</i>
+					Glucose Monitoring System
+				</a>
+				<ul id="nav-mobile" class="right hide-on-med-and-down">
+					<li>
+						<a href="#">
+							<div class="btn-group">
+
+								<!-- Dropdown Trigger -->
+								<a class='dropdown-trigger btn blue' href='#' data-target='dropdown1'>Patients</a>
+
+								<!-- Dropdown Structure -->
+								<ul id='dropdown1' class='dropdown-content'>
+							
+								</ul>
+
+							</div>
+						</a>
+					</li>
+					<li>
+						<a href="#">About</a>
+					</li>
+				</ul>
+			</div>
+		</nav>
+		<div class="container">
+			<br>
+			<div class="row">
+				<div class="col">
+					<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-8 offset-md-2">
+					<div class="content-container container">
+						<div class="row">
+							<div class="col s12">
+								<table class="striped centered" id='details'>
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Glucose Level</th>
+											<th>Condition</th>
+											<th>Action</th>
+										</tr>
+									</thead>
+
+									<tbody>
+										<!-- <tr>
+											<td>Alvin</td>
+											<td>1.2</td>
+											<td>
+												<span class="badge red">CRITICAL</span>
+											</td>
+										</tr>
+										<tr>
+											<td>Abc</td>
+											<td>0.2</td>
+											<td>
+												<span class="badge green">NORMAL</span>
+											</td>
+										</tr>
+										<tr>
+											<td>Pqr</td>
+											<td>0.2</td>
+											<td>
+												<span class="badge yellow">POTENTIAL</span>
+											</td>
+										</tr> -->
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<section>
+		</section>
+		<script type="text/javascript" src="/scripts/util.js"></script>
+		<script type="text/javascript" src="/scripts/index.js"></script>
+		<script src="/scripts/charts.js"></script>
+		<br>
+		<br>
+		<br>
 	</div>
 </body>
+
 </html>

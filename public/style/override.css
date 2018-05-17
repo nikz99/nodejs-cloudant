@@ -1,0 +1,35 @@
+.brand-logo{
+    margin-left:10px;
+}
+
+.brand-logo .material-icons{
+    margin-left:1em;
+    font-size:2em;
+}
+
+.content-container {
+    margin-top:2em;
+}
+
+span.badge{
+    color:white;
+}
+
+
+
+.glow{
+    box-shadow:0 0 20px 1px red;
+    animation: glowanim 1s ease infinite;
+}
+
+@keyframes glowanim{
+    0%{
+        box-shadow:0 0 20px 1px red;
+    }
+    50%{
+        box-shadow:0 0 20px 3px red;
+    }
+    100%{
+        box-shadow:0 0 20px 1px red;
+    }
+}
