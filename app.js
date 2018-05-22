@@ -8,7 +8,8 @@ var express = require('express'),
     http = require('http'),
     path = require('path'),
     fs = require('fs'),
-    request = require('request');;
+    request = require('request'),
+    twilio = require('twilio');
 
 var app = express();
 
@@ -24,6 +25,7 @@ var dbCredentials = {
 
 var levelConfig = JSON.parse(fs.readFileSync('limits.json', 'utf8'));
 console.log(levelConfig);
+
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var logger = require('morgan');
@@ -142,48 +144,32 @@ var saveDocument = function (id, name, value, response) {
 
 }
 
-// setInterval(() => {
-//     const body = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-//     const data = [];
-//     body.forEach(patient => {
-//         let patientStatus = checkSugarLevel(patient);
-//         setTimeout(() => {
-//             db.insert({
-//                 name: (new Date()).getTime(),
-//                 value: patientStatus
-//             }, '', function (err, doc) {
-//                 if (err)
-//                     console.log(err);
-//                 else
-//                     console.log('Successfully added record');
-//             });
-//         }, 1000);
-//     })
-
-
-//     // request('https://my.api.mockaroo.com/sugar_levels.json?key=a9ca3c60', function (error, response, body) {
-//     //     if (error) {
-//     //         console.error('error:', error); // Print the error if one occurred  
-//     //     } else {
-//     //         console.log({
-//     //             time:new Date(),
-//     //             value:body
-//     //         });
-
-//     //         // db.insert({
-//     //         //     name: new Date(),
-//     //         //     value: body
-//     //         // }, '', function (err, doc) {
-//     //         //     // if (err) {
-//     //         //     //     console.log(err);
-//     //         //     //     // response.sendStatus(500);
-//     //         //     // } else
-//     //         //     //     // response.sendStatus(200);
-//     //         //     // response.end();
-//     //         // });
-//     //     }
-//     // });
-// }, 60000);// 900000);
+setInterval(() => {
+    // const body = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+    try {
+        request('https://my.api.mockaroo.com/sugar_levels.json?key=a9ca3c60', function (error, response, body) {
+            const data = [];
+            console.log('Data received - ', body);
+            body = JSON.parse(body);
+            body.forEach(patient => {
+                let patientStatus = checkSugarLevel(patient);
+                setTimeout(() => {
+                    db.insert({
+                        name: (new Date()).getTime(),
+                        value: patientStatus
+                    }, '', function (err, doc) {
+                        if (err)
+                            console.log(err);
+                        else
+                            console.log('Successfully added record');
+                    });
+                }, 1000);
+            })
+        });
+    } catch (e) {
+        console.log('Interval job error occured : ', e)
+    }
+}, 10000); //900000);
 
 
 
@@ -256,7 +242,7 @@ app.get('/api/glucosedata', function (request, response) {
 });
 
 function checkSugarLevel(patientStatus) {
-    let sugarLevel;
+    let sugarLevel, sendMessage = false;
     for (let i = 0; i < levelConfig.length; i++) {
         sugarLevel = levelConfig[i];
         if (patientStatus.sugarLevel <= sugarLevel.value) {
@@ -278,17 +264,35 @@ function checkSugarLevel(patientStatus) {
 
         case 2:
             patientStatus.criticality = 'HIGH'
-            // perform Twillio messaging
+            // sendMessage = true;
             break;
 
-        case 4:
+        case 3:
             patientStatus.criticality = 'VERY HIGH'
-            // perform Twillio messaging
+            sendMessage = true;
             break;
 
     }
+
+    if (sendMessage) {
+        // console.log('Patient ' + patientStatus.name + ' is at high risk. Glucose level is ' + patientStatus.sugarLevel);
+        // sendTwillioMessage(patientStatus);
+    }
     return patientStatus;
 
+}
+
+function sendTwillioMessage(patientStatus) {
+    console.log('Sending twillio message');
+    var accountSid = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; // Your Account SID from www.twilio.com/console
+    var authToken = 'your_auth_token';   // Your Auth Token from www.twilio.com/console
+    var client = new twilio(accountSid, authToken);
+
+    client.messages.create({
+        body: 'Patient ' + patientStatus.name + ' is at high risk. Glucose level is ' + patientStatus.sugarLevel,
+        to: '+911234567890',    // Text this number
+        from: '+13852173913'    // From a valid Twilio number
+    }).then((message) => console.log(message.sid));
 }
 
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function () {
