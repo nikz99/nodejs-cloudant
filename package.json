@@ -16,7 +16,8 @@
     "method-override": "2.3.x",
     "morgan": "1.8.x",
     "node-red": "^0.18.4",
-    "request": "^2.85.0"
+    "request": "^2.85.0",
+    "twilio": "^3.17.0"
   },
   "repository": {},
   "engines": {
