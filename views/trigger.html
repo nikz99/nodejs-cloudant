@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Trigger Glucoce Device</title>
+</head>
+
+<body>
+    <style>
+        .big-button {
+            width: 200px;
+            height: 100px;
+            font-size: 20px;
+        }
+    </style>
+    <script type="text/javascript" src="/scripts/util.js"></script>
+    <script>
+        var MOCK = 'triggermock';
+        var SAVED = 'triggersaved';
+
+        function triggerMock() {
+            xhrGet(MOCK, function () {
+                console.log('Mock data requested');
+            });
+        }
+
+        function triggerSaved() {
+            xhrGet(SAVED, function () {
+                console.log('Mock data requested');
+            });
+        }
+    </script>
+
+    <button class="big-button" onclick="triggerMock()">Trigger Mock</button>
+
+    <button class="big-button" onclick="triggerSaved()">Trigger Saved</button>
+</body>
+
+</html>

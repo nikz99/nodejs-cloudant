@@ -1,6 +1,6 @@
 
 function setChart(data) {
-
+    console.log(data);
     Highcharts.chart('container', {
         chart: {
             zoomType: 'x'
@@ -13,7 +13,13 @@ function setChart(data) {
                 'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in'
         },
         xAxis: {
-            type: 'datetime'
+            type: 'datetime',
+                // labels: {
+                //     formatter: function () {
+                //         console.log(this);
+                //         return getTime(this.value);
+                //     }
+                // },
         },
         yAxis: {
             title: {

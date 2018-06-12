@@ -6,6 +6,7 @@ var express = require('express'),
     routes = require('./routes'),
     user = require('./routes/user'),
     http = require('http'),
+    url = require('url'),
     path = require('path'),
     fs = require('fs'),
     request = require('request'),
@@ -24,7 +25,7 @@ var dbCredentials = {
 };
 
 var levelConfig = JSON.parse(fs.readFileSync('limits.json', 'utf8'));
-console.log(levelConfig);
+// console.log(levelConfig);
 
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
@@ -97,6 +98,12 @@ initDBConnection();
 
 app.get('/', routes.index);
 
+app.get('/trigger', function (request, response) {
+    response.render('trigger.html');
+    response.end();
+});
+
+
 function createResponseData(id, name, value, attachments) {
 
     var responseData = {
@@ -144,8 +151,11 @@ var saveDocument = function (id, name, value, response) {
 
 }
 
-setInterval(() => {
-    // const body = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+// setInterval(() => {
+//     triggerDevice();
+// }, 5000);
+
+function getDataFromMockaroo() {
     try {
         request('https://my.api.mockaroo.com/sugar_levels.json?key=a9ca3c60', function (error, response, body) {
             const data = [];
@@ -169,9 +179,98 @@ setInterval(() => {
     } catch (e) {
         console.log('Interval job error occured : ', e)
     }
-}, 10000); //900000);
+}
+function getSavedMockData() {
+    const body = JSON.parse(fs.readFileSync('data.json', 'utf8'));
+    try {
+        const data = [];
+        console.log('Data received - ', body);
+        body.forEach(patient => {
+            let patientStatus = checkSugarLevel(patient);
+            setTimeout(() => {
+                db.insert({
+                    name: (new Date()).getTime(),
+                    value: patientStatus
+                }, '', function (err, doc) {
+                    if (err)
+                        console.log(err);
+                    else
+                        console.log('Successfully added record');
+                });
+            }, 1000);
+        })
+        // });
+    } catch (e) {
+        console.log('Interval job error occured : ', e)
+    }
+}
+
+app.get('/triggermock', function (request, response) {
+    getDataFromMockaroo();
+    response.end();
+});
+
+app.get('/triggersaved', function (request, response) {
+    getSavedMockData();
+    response.end();
+});
 
 
+
+app.get('/api/getUsers', function (request, response) {
+    db.view('unique', 'unique', { group: true }, function (err, body) {
+        if (!err) {
+            response.setHeader('Content-Type', 'text/plain');
+            response.write(JSON.stringify(body.rows.map(user => user.key)));
+            response.end();
+        }
+    });
+})
+
+
+
+app.get('/api/userGlucoseData', function (request, response) {
+    console.log(url.parse(request.url, true).query);
+    console.log("user glucose.. ")
+    response.setHeader('Content-Type', 'text/plain');
+    response.end();
+    // db = cloudant.use(dbCredentials.dbName);
+    // var docList = [];
+    // var i = 0;
+    // db.list(function (err, body) {
+    //     if (!err) {
+    //         var len = body.rows.length;
+    //         // console.log('total # of docs -> ' + body.rows);
+    //         // if (len != 0)  {
+    //         var limit = (len < 20) ? len : 20;
+    //         for (let j = 0; j < limit; j++) {
+    //             console.log('J', j);
+    //             db.get(body.rows[j].id, {
+    //                 revs_info: true
+    //             }, function (err, doc) {
+    //                 if (!err) {
+    //                     var responseData = createResponseData(
+    //                         doc._id,
+    //                         doc.name,
+    //                         doc.value, []);
+    //                     docList.push(responseData);
+    //                     if (j >= len || j == 19) {
+    //                         response.setHeader('Content-Type', 'text/plain');
+    //                         response.write(JSON.stringify(docList));
+    //                         console.log('ending response...');
+    //                         response.end();
+    //                     }
+    //                 } else {
+    //                     console.log(err);
+    //                 }
+    //             });
+    //         }
+    //     } else {
+    //         console.log(err);
+    //     }
+    // });
+
+});
 
 app.get('/api/glucosedata', function (request, response) {
 
@@ -182,64 +281,41 @@ app.get('/api/glucosedata', function (request, response) {
     var i = 0;
     db.list(function (err, body) {
         if (!err) {
-            var len = body.rows.length;
-            // console.log('total # of docs -> ' + body.rows);
-            // if (len != 0)  {
-            var limit = (len < 20) ? len : 20;
-            for (let j = 0; j < limit; j++) {
-                console.log('J', j);
-                db.get(body.rows[j].id, {
-                    revs_info: true
-                }, function (err, doc) {
-                    if (!err) {
-                        var responseData = createResponseData(
-                            doc._id,
-                            doc.name,
-                            doc.value, []);
-                        docList.push(responseData);
-                        if (j >= len || j == 19) {
-                            response.setHeader('Content-Type', 'text/plain');
-                            response.write(JSON.stringify(docList));
-                            console.log('ending response...');
-                            response.end();
-                        }
-                    } else {
-                        console.log(err);
+            var query = {
+                "selector": {},
+                "sort": [
+                    {
+                        "name": "desc"
                     }
-                });
+                ]
             }
 
-            // body.rows.forEach(function (document) {
-            //     console.log(document);
+            db.find(query, function (err, documents) {
+                const docs = documents.docs;
+                if (!err) {
+                    docs.forEach(d => {
+                        docList.push(createResponseData(
+                            d._id,
+                            d.name,
+                            d.value, []))
+                    })
+                    response.setHeader('Content-Type', 'text/plain');
+                    response.write(JSON.stringify(docList));
+                    console.log('ending response...');
+                    response.end();
+                } else {
+                    console.log(err);
+                }
+            });
 
-            //     db.get(document.id, {
-            //         revs_info: true
-            //     }, function (err, doc) {
-            //         if (!err) {
-            //             var responseData = createResponseData(
-            //                 doc._id,
-            //                 doc.name,
-            //                 doc.value, []);
-            //             docList.push(responseData);
-            //             i++;
-            //             if (i >= len) {
-            //                 response.setHeader('Content-Type', 'text/plain');
-            //                 response.write(JSON.stringify(docList));
-            //                 console.log('ending response...');
-            //                 response.end();
-            //             }
-            //         } else {
-            //             console.log(err);
-            //         }
-            //     });
 
-            // });
         } else {
             console.log(err);
         }
     });
 
 });
+
 
 function checkSugarLevel(patientStatus) {
     let sugarLevel, sendMessage = false;
@@ -276,7 +352,7 @@ function checkSugarLevel(patientStatus) {
 
     if (sendMessage) {
         // console.log('Patient ' + patientStatus.name + ' is at high risk. Glucose level is ' + patientStatus.sugarLevel);
-        // sendTwillioMessage(patientStatus);
+        sendTwillioMessage(patientStatus);
     }
     return patientStatus;
 
@@ -284,14 +360,14 @@ function checkSugarLevel(patientStatus) {
 
 function sendTwillioMessage(patientStatus) {
     console.log('Sending twillio message');
-    var accountSid = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'; // Your Account SID from www.twilio.com/console
-    var authToken = 'your_auth_token';   // Your Auth Token from www.twilio.com/console
+    var accountSid = 'AC5ebb7b19ce1a589988df6def0d5f99ba'; // Your Account SID from www.twilio.com/console
+    var authToken = '5dcd30eb4861dadfa49782ac7c27a025';   // Your Auth Token from www.twilio.com/console
     var client = new twilio(accountSid, authToken);
 
     client.messages.create({
         body: 'Patient ' + patientStatus.name + ' is at high risk. Glucose level is ' + patientStatus.sugarLevel,
-        to: '+911234567890',    // Text this number
-        from: '+13852173913'    // From a valid Twilio number
+        to: '+61478743847',    // Text this number
+        from: '+61437503511'    // From a valid Twilio number
     }).then((message) => console.log(message.sid));
 }
 
